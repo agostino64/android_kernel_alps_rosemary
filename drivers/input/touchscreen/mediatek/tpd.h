@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Copyright (c) 2019 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
 */
 
 #ifndef __TPD_H
@@ -164,6 +165,9 @@ extern void tpd_get_dts_info(void);
 extern void tpd_gpio_as_int(int pin);
 extern void tpd_gpio_output(int pin, int level);
 extern const struct of_device_id touch_of_match[];
+#if defined(CONFIG_TOUCHSCREEN_COMMON)
+extern bool tpd_gesture_flag;
+#endif
 #ifdef TPD_DEBUG_CODE
 #include "tpd_debug.h"
 #endif
