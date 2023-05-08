@@ -22,7 +22,7 @@
 #define SGEN_MUTE_CH2_KCONTROL_NAME "Audio_SineGen_Mute_Ch2"
 
 #if defined(CONFIG_MTK_ULTRASND_PROXIMITY)
-extern unsigned int elliptic_add_platform_controls(void *platform);
+extern unsigned int elliptic_add_component_controls(void *platform);
 #endif
 
 static const char *mt6785_sgen_mode_str[] = {
@@ -1857,7 +1857,7 @@ int mt6785_add_misc_control(struct snd_soc_component *platform)
 
 	//for ellipitc mixer control
 #if defined(CONFIG_MTK_ULTRASND_PROXIMITY)
-	elliptic_add_platform_controls(platform);
+	elliptic_add_component_controls(platform);
 #endif
 
 	return 0;
