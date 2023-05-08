@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2015 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  */
 
 #include <asm/memory.h>
@@ -24,6 +25,7 @@
 #include <mt-plat/mboot_params.h>
 #include <mt-plat/mrdump.h>
 #include "aed.h"
+#include <linux/cpufreq.h>
 
 #define RR_PROC_NAME "reboot-reason"
 
@@ -135,6 +137,36 @@ static struct attribute_group bootinfo_attr_group = {
 	.attrs = bootinfo_attrs,
 };
 
+static int cpumaxfreq_show(struct seq_file *m, void *v)
+{
+	unsigned long maxfreq, freq;
+	int i;
+
+	maxfreq = cpufreq_quick_get_max(0);
+	for_each_possible_cpu(i) {
+		freq = cpufreq_quick_get_max(i);
+		if (freq > maxfreq)
+			maxfreq = freq;
+	}
+	/* value is used for setting cpumaxfreq */
+	maxfreq /= 10000;
+	seq_printf(m,"%lu.%02lu", maxfreq/100, maxfreq%100);
+
+	return 0;
+}
+
+static int cpumaxfreq_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, &cpumaxfreq_show, NULL);
+}
+
+static const struct file_operations proc_cpumaxfreq_operations = {
+	.open       = cpumaxfreq_open,
+	.read       = seq_read,
+	.llseek     = seq_lseek,
+	.release    = seq_release,
+};
+
 int ksysfs_bootinfo_init(void)
 {
 	int error;
@@ -147,6 +179,7 @@ int ksysfs_bootinfo_init(void)
 	if (error)
 		kobject_put(bootinfo_kobj);
 
+	proc_create("cpumaxfreq", 0, NULL, &proc_cpumaxfreq_operations);
 	return error;
 }
 
