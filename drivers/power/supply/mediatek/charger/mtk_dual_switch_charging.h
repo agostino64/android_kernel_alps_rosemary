@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Copyright (c) 2021 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
 */
 
 #ifndef _MTK_DUAL_SWITCH_CHARGER_H
@@ -16,6 +17,9 @@ struct dual_switch_charging_alg_data {
 	unsigned int cc_charging_time;
 	unsigned int cv_charging_time;
 	unsigned int full_charging_time;
+	struct power_supply	*usb_psy;
+	int	vbus_mv;
+	bool first_run;
 };
 
 #endif /* End of _MTK_DUAL_SWITCH_CHARGER_H */

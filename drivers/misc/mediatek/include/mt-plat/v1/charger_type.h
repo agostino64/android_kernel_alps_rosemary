@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Copyright (c) 2021 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
 */
 
 #ifndef __MTK_CHARGER_TYPE_H__
@@ -16,6 +17,8 @@ enum charger_type {
 	APPLE_1_0A_CHARGER, /* 1A apple charger */
 	APPLE_0_5A_CHARGER, /* 0.5A apple charger */
 	WIRELESS_CHARGER,
+	HVDCP_CHARGER,	/* QC2 */
+	CHECK_HV,	/* check done */
 };
 #if defined(CONFIG_USB_MTK_HDRC) || defined(CONFIG_USB_MU3D_DRV) \
 	|| defined(CONFIG_EXTCON_MTK_USB)
