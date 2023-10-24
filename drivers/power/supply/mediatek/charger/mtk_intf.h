@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Copyright (c) 2021 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
 */
 
 #ifndef __MTK_INTF_H
@@ -11,6 +12,8 @@
 #include "mtk_pe40.h"
 #include "mtk_pdc.h"
 
+extern struct charger_manager *p_info;
+
 enum adapter_ret {
 	ADAPTER_OK = 0,
 	ADAPTER_NOT_SUPPORT,
@@ -18,6 +21,7 @@ enum adapter_ret {
 	ADAPTER_REJECT,
 	ADAPTER_ERROR,
 	ADAPTER_ADJUST,
+	ADAPTER_VERIFYING,
 };
 
 extern int charger_is_chip_enabled(bool *en);
