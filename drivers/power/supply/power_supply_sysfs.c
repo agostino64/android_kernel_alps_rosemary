@@ -41,12 +41,11 @@
 static struct device_attribute power_supply_attrs[];
 
 static const char * const power_supply_type_text[] = {
-	"Unknown", "Battery", "UPS", "Mains", "USB",
+	"Unknown", "Battery", "UPS", "Mains", "USB","USB_FLOAT",
 	"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
 	"USB_PD", "USB_PD_DRP", "BrickID",
-	"USB_HVDCP", "USB_HVDCP_3", "USB_HVDCP_3P5", "Wireless", "USB_FLOAT",
-	"BMS", "Parallel", "Main", "USB_C_UFP", "USB_C_DFP",
-	"Charge_Pump",
+	"USB_HVDCP", "USB_HVDCP_3", "USB_HVDCP_3P5", "Wireless",
+	"Bms", "Charger_Identify", "Batt_verify"
 };
 
 static const char * const power_supply_usb_type_text[] = {
@@ -97,7 +96,8 @@ static const char * const power_supply_usbc_text[] = {
 };
 
 static const char * const power_supply_usbc_pr_text[] = {
-	"none", "dual power role", "sink", "source"
+	"Unknown", "sink only", "source only", "dual-role ports",
+	"try source", "try sink", "wrong role"
 };
 
 static const char * const power_supply_typec_src_rp_text[] = {
@@ -207,6 +207,36 @@ static ssize_t power_supply_show_property(struct device *dev,
 		ret = sprintf(buf, "%s\n",
 			      power_supply_usbc_pr_text[value.intval]);
 		break;
+#ifdef CONFIG_XMUSB350_DET_CHG
+	case POWER_SUPPLY_PROP_QC35_VID:
+		ret = scnprintf(buf, PAGE_SIZE, "%02x,%02x,%02x,%02x\n",
+			       value.arrayval[0], value.arrayval[1], value.arrayval[2], value.arrayval[3]);
+		break;
+	case POWER_SUPPLY_PROP_QC35_VERSION:
+		ret = scnprintf(buf, PAGE_SIZE, "%02x,%02x\n",
+			       value.arrayval[0], value.arrayval[1]);
+		break;
+#endif
+#ifdef CONFIG_BATT_VERIFY_BY_DS28E16
+	case POWER_SUPPLY_PROP_ROMID:
+	case POWER_SUPPLY_PROP_DS_STATUS:
+		ret = scnprintf(buf, PAGE_SIZE, "%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
+			value.arrayval[0], value.arrayval[1], value.arrayval[2], value.arrayval[3],
+			value.arrayval[4], value.arrayval[5], value.arrayval[6], value.arrayval[7]);
+		break;
+	case POWER_SUPPLY_PROP_PAGE0_DATA:
+	case POWER_SUPPLY_PROP_PAGE1_DATA:
+	case POWER_SUPPLY_PROP_PAGEDATA:
+		ret = scnprintf(buf, PAGE_SIZE, "%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
+			value.arrayval[0], value.arrayval[1], value.arrayval[2], value.arrayval[3],
+			value.arrayval[4], value.arrayval[5], value.arrayval[6], value.arrayval[7],
+			value.arrayval[8], value.arrayval[9], value.arrayval[10], value.arrayval[11],
+			value.arrayval[12], value.arrayval[13], value.arrayval[14], value.arrayval[15]);
+		break;
+	case POWER_SUPPLY_PROP_VERIFY_MODEL_NAME:
+		return sprintf(buf, "%s\n", value.strval);
+		break;
+#endif
 	case POWER_SUPPLY_PROP_TYPEC_SRC_RP:
 		ret = sprintf(buf, "%s\n",
 			      power_supply_typec_src_rp_text[value.intval]);
@@ -322,6 +352,9 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(constant_charge_voltage_max),
 	POWER_SUPPLY_ATTR(charge_control_limit),
 	POWER_SUPPLY_ATTR(charge_control_limit_max),
+	POWER_SUPPLY_ATTR(fast_charge_current),
+	POWER_SUPPLY_ATTR(thermal_input_current),
+	POWER_SUPPLY_ATTR(input_current_now),
 	POWER_SUPPLY_ATTR(input_current_limit),
 	POWER_SUPPLY_ATTR(energy_full_design),
 	POWER_SUPPLY_ATTR(energy_empty_design),
@@ -333,9 +366,22 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(capacity_alert_min),
 	POWER_SUPPLY_ATTR(capacity_alert_max),
 	POWER_SUPPLY_ATTR(capacity_level),
+	POWER_SUPPLY_ATTR(soc_decimal),
+	POWER_SUPPLY_ATTR(soc_decimal_rate),
+	POWER_SUPPLY_ATTR(mtk_soc_decimal_rate),
+	POWER_SUPPLY_ATTR(capacity_raw),
 	POWER_SUPPLY_ATTR(temp),
+	/* 2021.02.04 longcheer jiangshitian change for pd-chg and main-cam thermal begin */
+	#if defined(CONFIG_TARGET_PROJECT_K7B)
+	POWER_SUPPLY_ATTR(main_cam_temp),
+	POWER_SUPPLY_ATTR(pd_charger_temp),
+	POWER_SUPPLY_ATTR(set_temp_enable),
+	POWER_SUPPLY_ATTR(set_temp_num),
+	#endif
+	/* 2021.02.04 longcheer jiangshitian change for pd-chg and main-cam thermal end */
 	POWER_SUPPLY_ATTR(temp_max),
 	POWER_SUPPLY_ATTR(temp_min),
+	POWER_SUPPLY_ATTR(temp_connect),
 	POWER_SUPPLY_ATTR(temp_alert_min),
 	POWER_SUPPLY_ATTR(temp_alert_max),
 	POWER_SUPPLY_ATTR(temp_ambient),
@@ -351,10 +397,88 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(precharge_current),
 	POWER_SUPPLY_ATTR(charge_term_current),
 	POWER_SUPPLY_ATTR(calibrate),
+	POWER_SUPPLY_ATTR(fastcharge_mode),
+	POWER_SUPPLY_ATTR(real_type),
+	POWER_SUPPLY_ATTR(hvdcp3_type),
+	POWER_SUPPLY_ATTR(quick_charge_type),
+	POWER_SUPPLY_ATTR(type_recheck),
+	POWER_SUPPLY_ATTR(pd_verify_in_process),
+#ifdef CONFIG_MTBF_SUPPORT
+	POWER_SUPPLY_ATTR(mtbf_current),
+#endif
+#ifdef CONFIG_BQ2597X_CHARGE_PUMP
+	/* Bq charge pump properties */
+	POWER_SUPPLY_ATTR(dp_dm_bq),
+	POWER_SUPPLY_ATTR(ti_bus_error_status),
+	POWER_SUPPLY_ATTR(ti_charge_mode),
+	POWER_SUPPLY_ATTR(ti_bypass_mode_enable),
+	POWER_SUPPLY_ATTR(ti_battery_present),
+	POWER_SUPPLY_ATTR(ti_vbus_present),
+	POWER_SUPPLY_ATTR(ti_battery_voltage),
+	POWER_SUPPLY_ATTR(ti_battery_current),
+	POWER_SUPPLY_ATTR(ti_battery_temperature),
+	POWER_SUPPLY_ATTR(ti_bus_voltage),
+	POWER_SUPPLY_ATTR(ti_bus_current),
+	POWER_SUPPLY_ATTR(ti_bus_temperature),
+	POWER_SUPPLY_ATTR(ti_die_temperature),
+	POWER_SUPPLY_ATTR(ti_alarm_status),
+	POWER_SUPPLY_ATTR(ti_fault_status),
+	POWER_SUPPLY_ATTR(ti_reg_status),
+	POWER_SUPPLY_ATTR(ti_set_bus_protection_for_qc3),
+	POWER_SUPPLY_ATTR(bq_charge_done),
+	POWER_SUPPLY_ATTR(hv_charge_enable),
+	POWER_SUPPLY_ATTR(pd_active),
+	POWER_SUPPLY_ATTR(pd_authentication),
+	POWER_SUPPLY_ATTR(pd_type),
+#endif
+#ifdef CONFIG_XMUSB350_DET_CHG
+	POWER_SUPPLY_ATTR(qc35_chg_type),
+	POWER_SUPPLY_ATTR(qc35_error_state),
+	POWER_SUPPLY_ATTR(qc35_vin),
+	POWER_SUPPLY_ATTR(qc35_version),
+	POWER_SUPPLY_ATTR(qc35_vid),
+	POWER_SUPPLY_ATTR(qc35_chip_ok),
+	POWER_SUPPLY_ATTR(qc35_rerun_apsd),
+	POWER_SUPPLY_ATTR(qc35_soft_reset),
+	POWER_SUPPLY_ATTR(qc35_mode_select),
+	POWER_SUPPLY_ATTR(qc35_intb_enable),
+	POWER_SUPPLY_ATTR(qc35_hvdcp_enable),
+	POWER_SUPPLY_ATTR(qc35_bc12_enable),
+	POWER_SUPPLY_ATTR(qc35_sleep_enable),
+	POWER_SUPPLY_ATTR(qc35_hvdcp_dpdm),
+	POWER_SUPPLY_ATTR(qc35_detect_done),
+#endif
+#ifdef CONFIG_BATT_VERIFY_BY_DS28E16
+	/* battery verify properties */
+	POWER_SUPPLY_ATTR(romid),
+	POWER_SUPPLY_ATTR(ds_status),
+	POWER_SUPPLY_ATTR(pagenumber),
+	POWER_SUPPLY_ATTR(pagedata),
+	POWER_SUPPLY_ATTR(authen_result),
+	POWER_SUPPLY_ATTR(session_seed),
+	POWER_SUPPLY_ATTR(s_secret),
+	POWER_SUPPLY_ATTR(challenge),
+	POWER_SUPPLY_ATTR(auth_anon),
+	POWER_SUPPLY_ATTR(auth_bdconst),
+	POWER_SUPPLY_ATTR(page0_data),
+	POWER_SUPPLY_ATTR(page1_data),
+	POWER_SUPPLY_ATTR(verify_model_name),
+	POWER_SUPPLY_ATTR(chip_ok),
+	POWER_SUPPLY_ATTR(maxim_batt_cycle_count),
+#endif
 	/* Local extensions */
 	POWER_SUPPLY_ATTR(usb_hc),
 	POWER_SUPPLY_ATTR(usb_otg),
 	POWER_SUPPLY_ATTR(charge_enabled),
+	POWER_SUPPLY_ATTR(charging_enabled),
+	POWER_SUPPLY_ATTR(typec_mode),
+	POWER_SUPPLY_ATTR(typec_cc_orientation),
+	POWER_SUPPLY_ATTR(typec_power_role),
+	POWER_SUPPLY_ATTR(resistance),
+	POWER_SUPPLY_ATTR(resistance_id),
+	POWER_SUPPLY_ATTR(input_suspend),
+	POWER_SUPPLY_ATTR(connector_temp),
+	POWER_SUPPLY_ATTR(vbus_disable),
 	POWER_SUPPLY_ATTR(set_ship_mode),
 	POWER_SUPPLY_ATTR(real_type),
 	POWER_SUPPLY_ATTR(charge_now_raw),
@@ -520,6 +644,7 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(battery_type),
 	POWER_SUPPLY_ATTR(cycle_counts),
 	POWER_SUPPLY_ATTR(serial_number),
+	POWER_SUPPLY_ATTR(battery_type),
 };
 
 static struct attribute *
