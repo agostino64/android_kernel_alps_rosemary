@@ -1,7 +1,15 @@
-/* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (c) 2021 MediaTek Inc.
-*/
+ * Copyright (C) 2019 MediaTek Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
+ */
 
 #ifndef __RT9471_CHARGER_H
 #define __RT9471_CHARGER_H
@@ -152,20 +160,16 @@ enum rt9471_reg_addr {
 #define RT9471_BC12_EN_MASK	BIT(7)
 
 /* ========== STATUS 0x0F ============ */
-#define RT9471_PORTSTAT_SHIFT	4
-#define RT9471_PORTSTAT_MASK	0xF0
 #define RT9471_ICSTAT_SHIFT	0
 #define RT9471_ICSTAT_MASK	0x0F
+#define RT9471_PORTSTAT_SHIFT	4
+#define RT9471_PORTSTAT_MASK	0xF0
 
 /* ========== STAT0 0x10 ============ */
 #define RT9471_ST_VBUSGD_SHIFT		7
 #define RT9471_ST_VBUSGD_MASK		BIT(7)
 #define RT9471_ST_CHGRDY_SHIFT		6
 #define RT9471_ST_CHGRDY_MASK		BIT(6)
-#define RT9471_ST_IEOC_SHIFT		5
-#define RT9471_ST_IEOC_MASK		BIT(5)
-#define RT9471_ST_BGCHG_SHIFT		4
-#define RT9471_ST_BGCHG_MASK		BIT(4)
 #define RT9471_ST_CHGDONE_SHIFT		3
 #define RT9471_ST_CHGDONE_MASK		BIT(3)
 #define RT9471_ST_BC12_DONE_SHIFT	0

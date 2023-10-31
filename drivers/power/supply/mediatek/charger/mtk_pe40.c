@@ -389,7 +389,7 @@ int pe40_init_state(void)
 	}
 
 	/* disable charger */
-	charger_force_disable_powerpath(true);
+	charger_enable_powerpath(false);
 
 	msleep(500);
 
@@ -421,7 +421,7 @@ int pe40_init_state(void)
 		cap.output_ma);
 
 	/*enable charger*/
-	charger_force_disable_powerpath(false);
+	charger_enable_powerpath(true);
 
 	msleep(100);
 
