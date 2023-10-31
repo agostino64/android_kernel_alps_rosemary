@@ -1,7 +1,15 @@
-/* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (c) 2021 MediaTek Inc.
-*/
+ * Copyright (C) 2016 MediaTek Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
+ */
 
 #include <linux/module.h>
 #include <linux/stat.h>
@@ -509,113 +517,99 @@ int charger_dev_set_direct_charging_vbusov(struct charger_device *chg_dev,
 }
 EXPORT_SYMBOL(charger_dev_set_direct_charging_vbusov);
 
-int charger_dev_set_ibusocp(struct charger_device *chg_dev, u32 uA)
+int charger_dev_set_direct_charging_ibatoc(struct charger_device *chg_dev,
+					   u32 uA)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->set_ibusocp)
-		return chg_dev->ops->set_ibusocp(chg_dev, uA);
-	return -ENOTSUPP;
-}
-EXPORT_SYMBOL(charger_dev_set_ibusocp);
+	    chg_dev->ops->set_direct_charging_ibatoc)
+		return chg_dev->ops->set_direct_charging_ibatoc(chg_dev,
+								uA);
 
-int charger_dev_set_vbusovp(struct charger_device *chg_dev, u32 uV)
-{
-	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->set_vbusovp)
-		return chg_dev->ops->set_vbusovp(chg_dev, uV);
 	return -ENOTSUPP;
 }
-EXPORT_SYMBOL(charger_dev_set_vbusovp);
+EXPORT_SYMBOL(charger_dev_set_direct_charging_ibatoc);
 
-int charger_dev_set_ibatocp(struct charger_device *chg_dev, u32 uA)
+int charger_dev_set_direct_charging_vbatov(struct charger_device *chg_dev,
+					   u32 uV)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->set_ibatocp)
-		return chg_dev->ops->set_ibatocp(chg_dev, uA);
-	return -ENOTSUPP;
-}
-EXPORT_SYMBOL(charger_dev_set_ibatocp);
+	    chg_dev->ops->set_direct_charging_vbatov)
+		return chg_dev->ops->set_direct_charging_vbatov(chg_dev,
+								uV);
 
-int charger_dev_set_vbatovp(struct charger_device *chg_dev, u32 uV)
-{
-	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->set_vbatovp)
-		return chg_dev->ops->set_vbatovp(chg_dev, uV);
 	return -ENOTSUPP;
 }
-EXPORT_SYMBOL(charger_dev_set_vbatovp);
+EXPORT_SYMBOL(charger_dev_set_direct_charging_vbatov);
 
-int charger_dev_set_vbatovp_alarm(struct charger_device *chg_dev, u32 uV)
+int charger_dev_set_direct_charging_vbatov_alarm(struct charger_device *chg_dev,
+						 u32 uV)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->set_vbatovp_alarm)
-		return chg_dev->ops->set_vbatovp_alarm(chg_dev, uV);
-	return -ENOTSUPP;
-}
-EXPORT_SYMBOL(charger_dev_set_vbatovp_alarm);
+	    chg_dev->ops->set_direct_charging_vbatov_alarm)
+		return chg_dev->ops->set_direct_charging_vbatov_alarm(chg_dev,
+								      uV);
 
-int charger_dev_reset_vbatovp_alarm(struct charger_device *chg_dev)
-{
-	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->reset_vbatovp_alarm)
-		return chg_dev->ops->reset_vbatovp_alarm(chg_dev);
 	return -ENOTSUPP;
 }
-EXPORT_SYMBOL(charger_dev_reset_vbatovp_alarm);
+EXPORT_SYMBOL(charger_dev_set_direct_charging_vbatov_alarm);
 
-int charger_dev_set_vbusovp_alarm(struct charger_device *chg_dev, u32 uV)
+int charger_dev_reset_direct_charging_vbatov_alarm(
+	struct charger_device *chg_dev)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->set_vbusovp_alarm)
-		return chg_dev->ops->set_vbusovp_alarm(chg_dev, uV);
-	return -ENOTSUPP;
-}
-EXPORT_SYMBOL(charger_dev_set_vbusovp_alarm);
+	    chg_dev->ops->reset_direct_charging_vbatov_alarm)
+		return chg_dev->ops->reset_direct_charging_vbatov_alarm(
+			chg_dev);
 
-int charger_dev_reset_vbusovp_alarm(struct charger_device *chg_dev)
-{
-	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->reset_vbusovp_alarm)
-		return chg_dev->ops->reset_vbusovp_alarm(chg_dev);
 	return -ENOTSUPP;
 }
-EXPORT_SYMBOL(charger_dev_reset_vbusovp_alarm);
+EXPORT_SYMBOL(charger_dev_reset_direct_charging_vbatov_alarm);
 
-int charger_dev_is_vbuslowerr(struct charger_device *chg_dev, bool *err)
+int charger_dev_set_direct_charging_vbusov_alarm(struct charger_device *chg_dev,
+						 u32 uV)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->is_vbuslowerr)
-		return chg_dev->ops->is_vbuslowerr(chg_dev, err);
-	return -ENOTSUPP;
-}
-EXPORT_SYMBOL(charger_dev_is_vbuslowerr);
+	    chg_dev->ops->set_direct_charging_vbusov_alarm)
+		return chg_dev->ops->set_direct_charging_vbusov_alarm(chg_dev,
+								      uV);
 
-int charger_dev_init_chip(struct charger_device *chg_dev)
-{
-	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->init_chip)
-		return chg_dev->ops->init_chip(chg_dev);
 	return -ENOTSUPP;
 }
-EXPORT_SYMBOL(charger_dev_init_chip);
+EXPORT_SYMBOL(charger_dev_set_direct_charging_vbusov_alarm);
 
-int charger_dev_enable_auto_trans(struct charger_device *chg_dev, bool en)
+int charger_dev_reset_direct_charging_vbusov_alarm(
+	struct charger_device *chg_dev)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->enable_auto_trans)
-		return chg_dev->ops->enable_auto_trans(chg_dev, en);
-	return -ENOTSUPP;
-}
-EXPORT_SYMBOL(charger_dev_enable_auto_trans);
+	    chg_dev->ops->reset_direct_charging_vbusov_alarm)
+		return chg_dev->ops->reset_direct_charging_vbusov_alarm(
+			chg_dev);
 
-int charger_dev_set_auto_trans(struct charger_device *chg_dev, u32 uV, bool en)
-{
-	if (chg_dev != NULL && chg_dev->ops != NULL &&
-	    chg_dev->ops->set_auto_trans)
-		return chg_dev->ops->set_auto_trans(chg_dev, uV, en);
 	return -ENOTSUPP;
 }
-EXPORT_SYMBOL(charger_dev_set_auto_trans);
+EXPORT_SYMBOL(charger_dev_reset_direct_charging_vbusov_alarm);
+
+int charger_dev_is_direct_charging_vbuslowerr(
+	struct charger_device *chg_dev, bool *err)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->is_direct_charging_vbuslowerr)
+		return chg_dev->ops->is_direct_charging_vbuslowerr(
+			chg_dev, err);
+
+	return -ENOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_is_direct_charging_vbuslowerr);
+
+int charger_dev_init_direct_charging_chip(struct charger_device *chg_dev)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->init_direct_charging_chip)
+		return chg_dev->ops->init_direct_charging_chip(chg_dev);
+
+	return -ENOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_init_direct_charging_chip);
 
 int charger_dev_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 {
@@ -934,10 +928,8 @@ static int __init charger_class_init(void)
 		return PTR_ERR(charger_class);
 	}
 	charger_class->dev_groups = charger_groups;
-	/*
-	charger_class->suspend = charger_suspend;
-	charger_class->resume = charger_resume;
-	*/
+	//charger_class->suspend = charger_suspend;
+	//charger_class->resume = charger_resume;
 	return 0;
 }
 
