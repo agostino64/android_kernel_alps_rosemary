@@ -1,12 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Copyright (c) 2019 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
 */
 /dts-v1/;
 /plugin/;
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/pinctrl/mt6785-pinfunc.h>
+#include "mediatek/touchscreen.dtsi"
 
 &reserved_memory {
 };
@@ -470,5 +472,5 @@
 
 #include <k85v1_64_k419/cust.dtsi>
 #include "mediatek/cust_mt6785_camera.dtsi"
-#include "mediatek/cust_mt6785_touch_1080x2160.dtsi"
+//#include "mediatek/cust_mt6785_touch_1080x2160.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
