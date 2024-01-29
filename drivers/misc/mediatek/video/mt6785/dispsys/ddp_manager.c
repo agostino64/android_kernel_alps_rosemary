@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Copyright (c) 2019 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
 */
 
 #define LOG_TAG "ddp_manager"
@@ -1623,6 +1624,9 @@ static int is_module_in_path(enum DISP_MODULE_ENUM module,
 	return 0;
 }
 
+#ifdef CONFIG_ADB_WRITE_PARAM_FEATURE
+extern int primary_display_set_panel_param(unsigned int param);
+#endif
 int dpmgr_path_user_cmd(disp_path_handle dp_handle, unsigned int msg,
 			unsigned long arg, void *cmdqhandle)
 {
@@ -1699,6 +1703,13 @@ int dpmgr_path_user_cmd(disp_path_handle dp_handle, unsigned int msg,
 		ret = disp_color_ioctl(DISP_MODULE_COLOR0, msg, arg,
 				       cmdqhandle);
 		break;
+#ifdef CONFIG_ADB_WRITE_PARAM_FEATURE
+	case DISP_IOCTL_SET_PANEL_PARAM:
+		{
+			primary_display_set_panel_param(arg);
+			break;
+		}
+#endif
 	default:
 		DISP_LOG_W("%s io not supported\n", __func__);
 		break;
