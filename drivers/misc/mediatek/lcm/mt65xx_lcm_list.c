@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) 2019 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  * Author: Joey Pan <joey.pan@mediatek.com>
  */
 
@@ -23,6 +24,15 @@ enum LCM_DSI_MODE_CON lcm_dsi_mode;
 struct LCM_DRIVER *lcm_driver_list[] = {
 #if defined(HX83102P_WXGA_VDO_INCELL_BOE)
 	&hx83102p_wxga_vdo_incell_boe_lcm_drv,
+#endif
+#if defined(DSI_PANEL_K7_38_0C_0A_FHDP_VIDEO)
+		&dsi_panel_k7_38_0c_0a_fhdp_video,
+#endif
+#if defined(DSI_PANEL_K7_44_06_0B_FHDP_VIDEO)
+		&dsi_panel_k7_44_06_0b_fhdp_video,
+#endif
+#if defined(DSI_PANEL_K7_44_0E_0B_FHDP_VIDEO)
+		&dsi_panel_k7_44_0e_0b_fhdp_video,
 #endif
 #if defined(NT36672AH_HDP_DSI_VDO_TCL_CSOT)
 	&nt36672ah_hdp_dsi_vdo_tcl_csot_lcm_drv,
@@ -1271,6 +1281,18 @@ struct LCM_DRIVER *lcm_driver_list[] = {
 	&r66451_fhdp_dsi_cmd_tianma_lcm_drv,
 #endif
 
+
+#if defined(DSI_PANEL_K7_38_0C_0A_FHDP_VIDEO)
+		&dsi_panel_k7_38_0c_0a_fhdp_video,
+#endif
+
+#if defined(DSI_PANEL_K7_44_06_0B_FHDP_VIDEO)
+		&dsi_panel_k7_44_06_0b_fhdp_video,
+#endif
+
+#if defined(DSI_PANEL_K7_44_0E_0B_FHDP_VIDEO)
+		&dsi_panel_k7_44_0e_0b_fhdp_video,
+#endif
 /*6768 OTM*/
 #if defined(OTM1911A_FHDP_DSI_VDO_TRULY_RT5081)
 	&otm1911a_fhdp_dsi_vdo_truly_rt5081_lcm_drv,

@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Copyright (c) 2019 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  * Author: Joey Pan <joey.pan@mediatek.com>
  */
 
@@ -1015,6 +1016,7 @@ struct LCM_DRIVER {
 	void (*suspend)(void);
 	void (*resume)(void);
 
+	void (*set_disp_param)(unsigned int param);
 	/* for power-on sequence refinement */
 	void (*init_power)(void);
 	void (*suspend_power)(void);
