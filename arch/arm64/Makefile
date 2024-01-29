@@ -149,7 +149,7 @@ zinstall install:
 
 PHONY += dtbs dtbs_install
 
-dtbs: prepare scripts
+dtbs: prepare scripts $(DRVGEN_FILE_LIST)
 	$(Q)$(MAKE) $(build)=$(boot)/dts
 
 dtbs_install:
