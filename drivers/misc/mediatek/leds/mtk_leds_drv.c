@@ -63,7 +63,11 @@ static int I2C_SET_FOR_BACKLIGHT  = 350;
 #define CONTROL_BL_TEMPERATURE
 #endif
 
+#ifdef CONFIG_BACKLIGHT_SUPPORT_2047_FEATURE
+#define MT_LED_INTERNAL_LEVEL_BIT_CNT 12
+#else
 #define MT_LED_INTERNAL_LEVEL_BIT_CNT 10
+#endif
 
 /******************************************************************************
  * for DISP backlight High resolution
@@ -412,7 +416,7 @@ int backlight_brightness_set(int level)
 					   level);
 	} else {
 #ifdef CONFIG_BACKLIGHT_SUPPORT_2047_FEATURE
-		return mt65xx_led_set_cust(&cust_led_list[TYPE_LCD],
+		return mt65xx_led_set_cust(&cust_led_list[MT65XX_LED_TYPE_LCD],
 							level);
 #else
 		return mt65xx_led_set_cust(&cust_led_list[MT65XX_LED_TYPE_LCD],
