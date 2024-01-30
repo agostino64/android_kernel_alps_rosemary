@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Copyright (c) 2020 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  */
 
 #ifndef __MT_PPM_API_H__
@@ -42,6 +43,7 @@ enum ppm_sysboost_user {
 	BOOST_BY_DEBUGD_64,
 	BOOST_BY_BOOT_TIME_OPT,
 
+	BOOST_BY_XM_THERMAL,
 	NR_PPM_SYSBOOST_USER,
 };
 
