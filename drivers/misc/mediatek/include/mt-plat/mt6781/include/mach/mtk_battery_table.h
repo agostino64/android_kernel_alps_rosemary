@@ -14,7 +14,7 @@
 #ifndef _MTK_BATTERY_TABLE_H
 #define _MTK_BATTERY_TABLE_H
 
-//#include "mtk_battery.h"
+#include "mtk_battery.h"
 
 #ifndef _DEA_MODIFY_
 #else
