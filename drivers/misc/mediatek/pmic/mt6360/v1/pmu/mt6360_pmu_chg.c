@@ -510,24 +510,6 @@ static int __maybe_unused mt6360_is_dcd_tout_enable(
 }
 #endif
 
-#if defined(CONFIG_MACH_MT6877) || defined(CONFIG_MACH_MT6893) \
-	|| defined(CONFIG_MACH_MT6885) || defined(CONFIG_MACH_MT6785)
-bool is_usb_rdy(struct device *dev)
-{
-	struct device_node *node;
-	bool ready = false;
-
-	node = of_parse_phandle(dev->of_node, "usb", 0);
-	if (node) {
-		ready = of_property_read_bool(node, "gadget-ready");
-		dev_info(dev, "gadget-ready=%d\n", ready);
-	} else
-		dev_info(dev, "usb node missing or invalid\n");
-
-	return ready;
-}
-#endif
-
 static int __mt6360_enable_usbchgen(struct mt6360_pmu_chg_info *mpci, bool en)
 {
 	int i, ret = 0;
@@ -550,14 +532,8 @@ static int __mt6360_enable_usbchgen(struct mt6360_pmu_chg_info *mpci, bool en)
 #endif /* CONFIG_MT6360_DCDTOUT_SUPPORT */
 		/* Workaround for CDP port */
 		for (i = 0; i < max_wait_cnt; i++) {
-#if defined(CONFIG_MACH_MT6877) || defined(CONFIG_MACH_MT6893) \
-	|| defined(CONFIG_MACH_MT6885) || defined(CONFIG_MACH_MT6785)
-			if (is_usb_rdy(mpci->dev))
-				break;
-#else
 			if (is_usb_rdy())
 				break;
-#endif
 			dev_info(mpci->dev, "%s: CDP block\n", __func__);
 #ifndef CONFIG_TCPC_CLASS
 			/* Check vbus */
