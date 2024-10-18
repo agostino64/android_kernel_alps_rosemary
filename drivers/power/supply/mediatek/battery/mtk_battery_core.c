@@ -44,6 +44,7 @@
 #include <linux/proc_fs.h>
 #include <linux/of_fdt.h>	/*of_dt API*/
 #include <linux/of.h>
+#include <linux/of_platform.h> /*of_find_node_by_name*/
 #include <linux/vmalloc.h>
 #include <linux/math64.h>
 #include <linux/alarmtimer.h>
@@ -73,7 +74,7 @@
 #include "simulator_kernel.h"
 #endif
 
-
+#include <linux/iio/consumer.h>
 
 /* ============================================================ */
 /* global variable */
