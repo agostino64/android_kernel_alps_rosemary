@@ -378,7 +378,9 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(quick_charge_type),
 	POWER_SUPPLY_ATTR(type_recheck),
 	POWER_SUPPLY_ATTR(pd_verify_in_process),
+#ifdef CONFIG_MTBF_SUPPORT
 	POWER_SUPPLY_ATTR(mtbf_current),
+#endif
 	POWER_SUPPLY_ATTR(real_soc),
 #ifdef CONFIG_BQ2597X_CHARGE_PUMP
 	/* Bq charge pump properties */

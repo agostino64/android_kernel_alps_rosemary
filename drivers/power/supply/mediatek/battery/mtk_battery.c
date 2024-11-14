@@ -5044,7 +5044,6 @@ static int battery_suspend(struct platform_device *dev, pm_message_t state)
 		gauge_enable_interrupt(FG_RG_INT_EN_BAT_TEMP_H, 0);
 		gauge_enable_interrupt(FG_RG_INT_EN_BAT_TEMP_L, 0);
 		pmic_set_register_value(PMIC_AUXADC_BAT_TEMP_IRQ_EN_MIN, 0);
-		pmic_set_register_value(PMIC_AUXADC_BAT_TEMP_EN_MIN, 0);
 		enable_bat_temp_det(0);
 	}
 
@@ -5083,7 +5082,6 @@ static int battery_resume(struct platform_device *dev)
 		gauge_enable_interrupt(FG_RG_INT_EN_BAT_TEMP_H, 1);
 		gauge_enable_interrupt(FG_RG_INT_EN_BAT_TEMP_L, 1);
 		pmic_set_register_value(PMIC_AUXADC_BAT_TEMP_IRQ_EN_MIN, 1);
-		pmic_set_register_value(PMIC_AUXADC_BAT_TEMP_EN_MIN, 1);
 		enable_bat_temp_det(1);
 	}
 

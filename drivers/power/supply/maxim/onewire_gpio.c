@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016  xiaomi Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  */
 #define pr_fmt(fmt)	"[Onewire] %s: " fmt, __func__
 
@@ -35,10 +36,10 @@
 #define OUTPUT_LOW				0x1
 */
 
-#define ONE_WIRE_CONFIG_OUT		writel_relaxed(0x00004000, g_onewire_data->gpio_dir_set_addr)// OUT
-#define ONE_WIRE_CONFIG_IN		writel_relaxed(0x00004000, g_onewire_data->gpio_dir_clr_addr)// IN
-#define ONE_WIRE_OUT_HIGH		writel_relaxed(0x00004000, g_onewire_data->gpio_dout_set_addr)// OUT: 1
-#define ONE_WIRE_OUT_LOW		writel_relaxed(0x00004000, g_onewire_data->gpio_dout_clr_addr)// OUT: 0
+#define ONE_WIRE_CONFIG_OUT		writel_relaxed(0x00000008, g_onewire_data->gpio_dir_set_addr)// OUT
+#define ONE_WIRE_CONFIG_IN		writel_relaxed(0x00000008, g_onewire_data->gpio_dir_clr_addr)// IN
+#define ONE_WIRE_OUT_HIGH		writel_relaxed(0x00000008, g_onewire_data->gpio_dout_set_addr)// OUT: 1
+#define ONE_WIRE_OUT_LOW		writel_relaxed(0x00000008, g_onewire_data->gpio_dout_clr_addr)// OUT: 0
 
 struct onewire_gpio_data {
 	struct platform_device *pdev;
@@ -127,7 +128,7 @@ unsigned char ow_reset(void)
 	ONE_WIRE_OUT_HIGH;
 	ONE_WIRE_CONFIG_IN;
 	Delay_us(7);
-	presence = (unsigned char)((readl_relaxed(g_onewire_data->gpio_din_addr) & 0x00004000) >> 14); // Read
+	presence = (unsigned char)((readl_relaxed(g_onewire_data->gpio_din_addr) & 0x00000008) >> 3); // Read
 	Delay_us(50);
 
 	raw_spin_unlock_irqrestore(&g_onewire_data->lock, flags);
@@ -143,13 +144,13 @@ unsigned char read_bit(void)
 	ONE_WIRE_OUT_LOW;
 	Delay_us(1);////
 	ONE_WIRE_CONFIG_IN;
-	Delay_ns(500);                                       //2022/4/19
+	Delay_ns(500);//
 	vamm = readl_relaxed(g_onewire_data->gpio_din_addr); // Read
 	Delay_us(5);
 	ONE_WIRE_OUT_HIGH;
 	ONE_WIRE_CONFIG_OUT;
 	Delay_us(6);
-	return((unsigned char)((vamm & 0x00004000) >> 14));
+	return((unsigned char)((vamm & 0x00000008) >> 3));
 }
 
 void write_bit(char bitval)

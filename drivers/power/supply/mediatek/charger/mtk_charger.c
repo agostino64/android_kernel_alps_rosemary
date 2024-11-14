@@ -86,6 +86,13 @@ static struct list_head consumer_head = LIST_HEAD_INIT(consumer_head);
 static DEFINE_MUTEX(consumer_mutex);
 struct charger_manager *p_info = NULL;
 
+struct tag_bootmode {
+	u32 size;
+	u32 tag;
+	u32 bootmode;
+	u32 boottype;
+};
+
 static int default_rate_seq[2] = {0, 30};
 
 #if CONFIG_TOUCHSCREEN_COMMON
@@ -2637,10 +2644,32 @@ static void mtk_battery_notify_check(struct charger_manager *info)
 
 static void check_battery_exist(struct charger_manager *info)
 {
+	struct device *dev = NULL;
+	struct device_node *boot_node = NULL;
+	struct tag_bootmode *tag = NULL;
 	unsigned int i = 0;
 	int count = 0;
-	int boot_mode = get_boot_mode();
-
+	int boot_mode = 11;//UNKNOWN_BOOT
+// workaround for mt6768 
+	//int boot_mode = get_boot_mode();
+	dev = &(info->pdev->dev);
+	if (dev != NULL){
+		boot_node = of_parse_phandle(dev->of_node, "bootmode", 0);
+		if (!boot_node){
+			chr_err("%s: failed to get boot mode phandle\n", __func__);
+			return;
+		}
+		else {
+			tag = (struct tag_bootmode *)of_get_property(boot_node,
+								"atag,boot", NULL);
+			if (!tag){
+				chr_err("%s: failed to get atag,boot\n", __func__);
+				return;
+			}
+			else
+				boot_mode = tag->bootmode;
+		}
+	}
 	if (is_disable_charger())
 		return;
 
@@ -2844,8 +2873,29 @@ stop_charging:
 
 static void kpoc_power_off_check(struct charger_manager *info)
 {
-	unsigned int boot_mode = get_boot_mode();
 	int vbus = 0;
+	struct device *dev = NULL;
+	struct device_node *boot_node = NULL;
+	struct tag_bootmode *tag = NULL;
+	int boot_mode = 11;//UNKNOWN_BOOT
+// workaround for mt6768 
+	//int boot_mode = get_boot_mode();
+	dev = &(info->pdev->dev);
+	if (dev != NULL){
+		boot_node = of_parse_phandle(dev->of_node, "bootmode", 0);
+		if (!boot_node){
+			chr_err("%s: failed to get boot mode phandle\n", __func__);
+		}
+		else {
+			tag = (struct tag_bootmode *)of_get_property(boot_node,
+								"atag,boot", NULL);
+			if (!tag){
+				chr_err("%s: failed to get atag,boot\n", __func__);
+			}
+			else
+				boot_mode = tag->bootmode;
+		}
+	}
 
 	if (boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT
 	    || boot_mode == LOW_POWER_OFF_CHARGING_BOOT) {

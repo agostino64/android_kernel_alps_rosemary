@@ -944,6 +944,17 @@ static int pd_get_current_state(struct adapter_device *dev)
 	return MTK_ADAPTER_OK;
 }
 
+/* 2021.02.24 longcheer jiangshitian edit for lenovo c-to-c discharge repeat HTH-142754 start */
+bool pd_is_5v2a = false;
+
+bool pd_pdos_is_5v2a(void)
+{
+	return pd_is_5v2a;
+}
+EXPORT_SYMBOL_GPL(pd_pdos_is_5v2a);
+/* 2021.02.24 longcheer jiangshitian edit for lenovo c-to-c discharge repeat HTH-142754 end */
+
+
 static int pd_get_pdos(struct adapter_device *dev)
 {
 	struct mtk_pd_adapter_info *info;
@@ -976,6 +987,15 @@ static int pd_get_pdos(struct adapter_device *dev)
 		chr_err("[%s]: pdo[%d] { received_pdos is %08x, cap.pdos is %08x}\n",
 			__func__, i, info->adapter_dev->received_pdos[i], cap.pdos[i]);
  	}
+	
+	/* 2021.02.24 longcheer jiangshitian edit for lenovo c-to-c discharge repeat HTH-142754 start */
+	if(info->adapter_dev->received_pdos[0] == 0x2701912c ||info->adapter_dev->received_pdos[0] == 0x26019096)
+		pd_is_5v2a = true;
+	else
+		pd_is_5v2a = false;
+
+	//chr_err("[%s]: pd_is_5v2a = %d ,adapter_dev->received_pdos[0 is %08x\n", __func__, pd_is_5v2a,info->adapter_dev->received_pdos[0]);
+	/* 2021.02.24 longcheer jiangshitian edit for lenovo c-to-c discharge repeat HTH-142754 end */
 			
 	return MTK_ADAPTER_OK;
 }

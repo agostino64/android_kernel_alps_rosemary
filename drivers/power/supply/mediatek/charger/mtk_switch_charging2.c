@@ -60,6 +60,7 @@
 #include <linux/seq_file.h>
 #include <linux/scatterlist.h>
 #include <linux/suspend.h>
+#include <linux/of.h>
 
 #include <mt-plat/mtk_boot.h>
 #include <mt-plat/v1/mtk_charger.h>
@@ -68,6 +69,12 @@
 #include "mtk_intf.h"
 #include "mtk_charger_init.h"
 
+struct tag_bootmode {
+	u32 size;
+	u32 tag;
+	u32 bootmode;
+	u32 boottype;
+};
 
 static int _uA_to_mA(int uA)
 {
@@ -134,13 +141,37 @@ static void swchg_select_charging_current_limit(struct charger_manager *info)
 	int thermal_input_current = 3000000;
 	struct power_supply	*battery_psy;
 	union power_supply_propval val = {0,};
+#ifdef CONFIG_MTBF_SUPPORT
 	struct power_supply	*usb_psy;
 	bool is_powerpath_en = true;
 	bool is_chg_suspend = true;
+#endif
+
+	struct device *dev = NULL;
+	struct device_node *boot_node = NULL;
+	struct tag_bootmode *tag = NULL;
+	int boot_mode = 11;//UNKNOWN_BOOT
+
+	dev = &(info->pdev->dev);
+	if (dev != NULL) {
+		boot_node = of_parse_phandle(dev->of_node, "bootmode", 0);
+		if (!boot_node) {
+			chr_err("%s: failed to get boot mode phandle\n", __func__);
+		} else {
+			tag = (struct tag_bootmode *)of_get_property(boot_node,
+								"atag,boot", NULL);
+			if (!tag) {
+				chr_err("%s: failed to get atag,boot\n", __func__);
+			} else
+				boot_mode = tag->bootmode;
+		}
+	}
 
 	battery_psy = power_supply_get_by_name("battery");
 
+#ifdef CONFIG_MTBF_SUPPORT
 	usb_psy = power_supply_get_by_name("usb");
+#endif
 
 	if (info->pe5.online) {
 		chr_err("In PE5.0\n");
@@ -191,8 +222,8 @@ static void swchg_select_charging_current_limit(struct charger_manager *info)
 		goto done;
 	}
 
-	if ((get_boot_mode() == META_BOOT) ||
-	    (get_boot_mode() == ADVMETA_BOOT)) {
+	if ((boot_mode == META_BOOT) ||
+		(boot_mode == ADVMETA_BOOT)) {
 		pdata->input_current_limit = 200000; /* 200mA */
 		goto done;
 	}
@@ -403,6 +434,7 @@ static void swchg_select_charging_current_limit(struct charger_manager *info)
 		pr_err("battery_psy not found\n");
 	}
 
+#ifdef CONFIG_MTBF_SUPPORT
 	if ((info->chr_type == CHARGING_HOST) || (info->chr_type == STANDARD_CHARGER)) {
 		if (usb_psy) {
 			ret = power_supply_get_property(usb_psy,
@@ -437,6 +469,7 @@ static void swchg_select_charging_current_limit(struct charger_manager *info)
 			pr_err("mtbf usb_psy not found\n");
 		}
 	}
+#endif
 
 done:
 	ret = charger_dev_get_min_charging_current(info->chg1_dev, &ichg1_min);
@@ -447,6 +480,7 @@ done:
 	if (ret != -ENOTSUPP && pdata->input_current_limit < aicr1_min)
 		pdata->input_current_limit = 0;
 
+#ifdef CONFIG_MTBF_SUPPORT
 	ret = charger_dev_is_powerpath_enabled(info->chg1_dev, &is_powerpath_en);
 	if (ret < 0)
 	{
@@ -456,6 +490,7 @@ done:
 	is_chg_suspend = charger_manager_is_input_suspend();
 
 	chr_err("%s: mtbf is_powerpath_en = %d, is_chg_suspend = %d\n", __func__, is_powerpath_en, is_chg_suspend);
+#endif
 
 	chr_err("%s force:%d thermal:%d,%d setting:%d %d type:%d usb_unlimited:%d usbif:%d usbsm:%d aicl:%d atm:%d iclmin:%d fccmin:%d\n",
 		__func__,
@@ -577,11 +612,31 @@ static void swchg_turn_on_charging(struct charger_manager *info)
 	struct switch_charging_alg_data *swchgalg = info->algorithm_data;
 	bool charging_enable = true;
 
+	struct device *dev = NULL;
+	struct device_node *boot_node = NULL;
+	struct tag_bootmode *tag = NULL;
+	int boot_mode = 11;//UNKNOWN_BOOT
+
+	dev = &(info->pdev->dev);
+	if (dev != NULL) {
+		boot_node = of_parse_phandle(dev->of_node, "bootmode", 0);
+		if (!boot_node) {
+			chr_err("%s: failed to get boot mode phandle\n", __func__);
+		} else {
+			tag = (struct tag_bootmode *)of_get_property(boot_node,
+								"atag,boot", NULL);
+			if (!tag)
+				chr_err("%s: failed to get atag,boot\n", __func__);
+			else
+				boot_mode = tag->bootmode;
+		}
+	}
+
 	if (swchgalg->state == CHR_ERROR) {
 		charging_enable = false;
 		chr_err("[charger]Charger Error, turn OFF charging !\n");
-	} else if ((get_boot_mode() == META_BOOT) ||
-			((get_boot_mode() == ADVMETA_BOOT))) {
+	} else if ((boot_mode == META_BOOT) ||
+			(boot_mode == ADVMETA_BOOT)) {
 		charging_enable = false;
 		info->chg1_data.input_current_limit = 200000; /* 200mA */
 		charger_dev_set_input_current(info->chg1_dev,

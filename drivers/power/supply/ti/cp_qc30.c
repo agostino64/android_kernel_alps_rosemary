@@ -664,10 +664,6 @@ static int cp_reset_vbus_volt(void)
 {
 	int ret;
 	int voltage = 0;
-#ifdef CONFIG_XMUSB350_DET_CHG
-	int number = 0;
-	int i;
-#endif
 	struct power_supply *psy;
 	struct power_supply *u_psy;
 	union power_supply_propval val = {0,};
@@ -691,52 +687,6 @@ static int cp_reset_vbus_volt(void)
 	psy = cp_get_charger_identify_psy();
 	if (!psy)
 		return -ENODEV;
-#ifdef CONFIG_XMUSB350_DET_CHG
-	if (pm_state.usb_type == POWER_SUPPLY_TYPE_USB_HVDCP_3) {
-		val.intval = XMUSB350_MODE_QC20_V5;
-		ret = power_supply_set_property(psy,
-			POWER_SUPPLY_PROP_QC35_MODE_SELECT, &val);
-		if (ret) {
-			pr_err("%s: mode select qc2 5V failed.\n", __func__);
-		} else {
-			pr_debug("%s: enter qc20 5V mode!\n", __func__);
-			for (i = 0; i < 30; i++) {
-				mdelay(200);
-				ret = power_supply_get_property(u_psy,
-						POWER_SUPPLY_PROP_VOLTAGE_NOW, &val);
-				pr_debug("%s: usb voltage is [%d]!\n", __func__, val.intval);
-				if (val.intval < 5300)
-					break;
-			}
-
-			if (val.intval < 5300) {
-				val.intval = XMUSB350_MODE_QC30_V5;
-				ret = power_supply_set_property(psy,
-					POWER_SUPPLY_PROP_QC35_MODE_SELECT, &val);
-				if (ret)
-					pr_err("%s: mode select qc3 5V failed.\n", __func__);
-				else
-					pr_debug("%s: enter qc30 5V mode!\n", __func__);
-			}
-		}
-	} else if (pm_state.usb_type == POWER_SUPPLY_TYPE_USB_HVDCP_3P5) {
-		val.intval = XMUSB350_MODE_QC3_PLUS_V5;
-		ret = power_supply_set_property(psy,
-			POWER_SUPPLY_PROP_QC35_MODE_SELECT, &val);
-		if (ret)
-			pr_err("%s: mode select qc35 5V failed.\n", __func__);
-
-		if (voltage < 5020) {
-			ret = 0;
-		} else {
-			number = (voltage - 5000) / 20 + 1;
-			pr_debug("%s: qc35 will dm %d pulse!\n", __func__, number);
-			cp_tune_vbus_volt(VOLT_DOWN, number);
-			mdelay(50);
-			pr_debug("%s: dp dm process done!\n", __func__);
-		}
-	}
-#endif
 	return ret;
 }
 

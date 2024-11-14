@@ -53,6 +53,13 @@
 
 #include "mtk_charger_intf.h"
 
+struct tag_bootmode {
+	u32 size;
+	u32 tag;
+	u32 bootmode;
+	u32 boottype;
+};
+
 #define ANTIBURN_VREF	1800
 #define ANTIBURN_RP	3900
 #define DEFAULT_TEMP	250
@@ -178,7 +185,9 @@ struct chg_type_info {
 	int typec_mode;
 	int usb_plug;
 	int voltage_max;
+#ifdef CONFIG_MTBF_SUPPORT
 	int mtbf_chg_curr;
+#endif
 #ifdef CONFIG_BQ2597X_CHARGE_PUMP
 	int pd_verifed;
 	int pd_active;
@@ -259,10 +268,30 @@ extern void kpd_pmic_pwrkey_hal(unsigned long pressed);
 static int mt_charger_online(struct mt_charger *mtk_chg)
 {
 	int ret = 0;
-	int boot_mode = 0;
+	struct device *dev = NULL;
+	struct device_node *boot_node = NULL;
+	struct tag_bootmode *tag = NULL;
+	int boot_mode = 11;//UNKNOWN_BOOT
+	dev = mtk_chg->dev;
+	if (dev != NULL){
+		boot_node = of_parse_phandle(dev->of_node, "bootmode", 0);
+		if (!boot_node){
+			chr_err("%s: failed to get boot mode phandle\n", __func__);
+		}
+		else {
+			tag = (struct tag_bootmode *)of_get_property(boot_node,
+								"atag,boot", NULL);
+			if (!tag){
+				chr_err("%s: failed to get atag,boot\n", __func__);
+			}
+			else
+				boot_mode = tag->bootmode;
+		}
+	}
 
 	if (!mtk_chg->chg_online) {
-		boot_mode = get_boot_mode();
+// workaround for mt6768
+		//boot_mode = get_boot_mode();
 		if (boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT ||
 		    boot_mode == LOW_POWER_OFF_CHARGING_BOOT) {
 			pr_notice("%s: Unplug Charger/USB\n", __func__);
@@ -559,7 +588,6 @@ int get_quick_charge_type(struct mt_charger *mtk_chg)
 	return 0;
 }
 extern int charger_dev_get_vendor_id(struct charger_device *chg_dev, u32 *vendor_id);
-extern int get_charger_type(void);
 static int mt_usb_get_property(struct power_supply *psy,
 	enum power_supply_property psp, union power_supply_propval *val)
 {
@@ -571,11 +599,6 @@ static int mt_usb_get_property(struct power_supply *psy,
 	u32 main_chg_vendor_id;
 	struct power_supply *cp_psy;
 	int ret;
-
-	int temp = 0;
-	temp = get_charger_type();
-	if (HVDCP_CHARGER == temp)
-		mtk_chg->chg_type = HVDCP_CHARGER;
 
 #ifdef CONFIG_XMUSB350_DET_CHG
 	int rc = 0;
@@ -678,9 +701,11 @@ static int mt_usb_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_TYPEC_MODE:
 		val->intval = mtk_chg->cti->typec_mode;
 		break;
+#ifdef CONFIG_MTBF_SUPPORT
 	case POWER_SUPPLY_PROP_MTBF_CUR:
 		val->intval = mtk_chg->cti->mtbf_chg_curr;
 		break;
+#endif
 	case POWER_SUPPLY_PROP_CONNECTOR_TEMP:
 		if (!fake_temp)
 			val->intval = get_connector_temp(mtk_chg);
@@ -786,9 +811,11 @@ static int mt_usb_set_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_CONNECTOR_TEMP:
 		fake_temp = val->intval;
 		break;
+#ifdef CONFIG_MTBF_SUPPORT
 	case POWER_SUPPLY_PROP_MTBF_CUR:
 		mtk_chg->cti->mtbf_chg_curr = val->intval;
 		break;
+#endif
 #ifdef CONFIG_BQ2597X_CHARGE_PUMP
 	case POWER_SUPPLY_PROP_PD_TYPE:
 		mtk_chg->cti->pd_type = val->intval;
@@ -835,7 +862,9 @@ static int mt_usb_is_writeable(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_PD_TYPE:
 	case POWER_SUPPLY_PROP_CONNECTOR_TEMP:
 	case POWER_SUPPLY_PROP_APDO_MAX:
+#ifdef CONFIG_MTBF_SUPPORT
 	case POWER_SUPPLY_PROP_MTBF_CUR:
+#endif
 		rc = 1;
 		break;
 	default:
@@ -962,7 +991,9 @@ static enum power_supply_property mt_usb_properties[] = {
 	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
 	POWER_SUPPLY_PROP_TYPE_RECHECK,
 	POWER_SUPPLY_PROP_PD_VERIFY_IN_PROCESS,
+#ifdef CONFIG_MTBF_SUPPORT
 	POWER_SUPPLY_PROP_MTBF_CUR,
+#endif
 };
 
 static enum power_supply_property mt_main_properties[] = {
@@ -1285,6 +1316,10 @@ static int mt_charger_probe(struct platform_device *pdev)
 	#ifdef CONFIG_EXTCON_USB_CHG
 	struct usb_extcon_info *info;
 	#endif
+	struct device *dev = NULL;
+	struct device_node *boot_node = NULL;
+	struct tag_bootmode *tag = NULL;
+	int boot_mode = 11;//UNKNOWN_BOOT
 
 	pr_info("%s\n", __func__);
 
@@ -1415,9 +1450,22 @@ static int mt_charger_probe(struct platform_device *pdev)
 		goto err_get_tcpc_dev;
 	}
 
-	ret = get_boot_mode();
-	if (ret == KERNEL_POWER_OFF_CHARGING_BOOT ||
-	    ret == LOW_POWER_OFF_CHARGING_BOOT)
+	dev = &(pdev->dev);
+	if (dev != NULL) {
+		boot_node = of_parse_phandle(dev->of_node, "bootmode", 0);
+		if (!boot_node) {
+			chr_err("%s: failed to get boot mode phandle\n", __func__);
+		} else {
+			tag = (struct tag_bootmode *)of_get_property(boot_node, "atag,boot", NULL);
+			if (!tag)
+				chr_err("%s: failed to get atag,boot\n", __func__);
+			else
+				boot_mode = tag->bootmode;
+		}
+	}
+	//ret = get_boot_mode();
+	if (boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT ||
+	    boot_mode == LOW_POWER_OFF_CHARGING_BOOT)
 		cti->tcpc_kpoc = true;
 	pr_info("%s KPOC(%d)\n", __func__, cti->tcpc_kpoc);
 
