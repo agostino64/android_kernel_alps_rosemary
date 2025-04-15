@@ -49,6 +49,12 @@
 
 #include "mt6359.h"
 
+/* 2021.01.21 longcheer jiangshitian change for mic noise begin */
+#if defined(CONFIG_HS_MIC_RECORD_NOISE_PD_CHG)
+extern void switch_charge_IC_GPL(bool micflag);
+#endif
+/* 2021.01.21 longcheer jiangshitian change for mic noise end */
+
 enum {
 	MT6359_AIF_1 = 0,	/* dl: hp, rcv, hp+lo */
 	MT6359_AIF_2,		/* dl: lo only */
@@ -1178,6 +1184,21 @@ static int mic_type_set(struct snd_kcontrol *kcontrol,
 
 	priv->mux_select[id] = index;
 
+/* 2021.01.21 longcheer jiangshitian change for mic noise begin */
+#if defined(CONFIG_HS_MIC_RECORD_NOISE_PD_CHG)
+	if(id == 1)
+	{
+		if(0 == index)
+		{
+			switch_charge_IC_GPL(0);
+		}
+		else
+		{
+			switch_charge_IC_GPL(1);
+		}
+	}
+#endif
+/* 2021.01.21 longcheer jiangshitian change for mic noise end */
 	return 0;
 }
 
