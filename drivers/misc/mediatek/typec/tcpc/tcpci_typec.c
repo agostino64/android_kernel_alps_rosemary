@@ -12,7 +12,6 @@
 
 /* MTK only */
 #include <mt-plat/mtk_boot.h>
-#include <mt-plat/v1/charger_type.h>
 
 #ifdef CONFIG_TYPEC_CAP_TRY_SOURCE
 #define CONFIG_TYPEC_CAP_TRY_STATE
@@ -554,9 +553,7 @@ static inline void typec_unattached_cc_entry(struct tcpc_device *tcpc)
 	}
 #endif	/* CONFIG_TYPEC_CAP_ROLE_SWAP */
 #ifdef CONFIG_CABLE_TYPE_DETECTION
-	if (tcpc->typec_state == typec_attached_snk ||
-	    tcpc->typec_state == typec_unattachwait_pe)
-		tcpc_typec_handle_ctd(tcpc, TCPC_CABLE_TYPE_NONE);
+	tcpc_typec_handle_ctd(tcpc, TCPC_CABLE_TYPE_NONE);
 #endif /* CONFIG_CABLE_TYPE_DETECTION */
 
 	tcpc->typec_role = tcpc->typec_role_new;
@@ -1892,7 +1889,6 @@ static inline bool typec_check_false_ra_detach(struct tcpc_device *tcpc)
 
 	if (drp) {
 		tcpci_set_cc(tcpc, TYPEC_CC_DRP);
-		typec_enable_low_power_mode(tcpc, TYPEC_CC_DRP);
 		tcpci_alert_status_clear(tcpc,
 			TCPC_REG_ALERT_EXT_RA_DETACH);
 	}
@@ -2194,20 +2190,22 @@ inline int typec_pd_start_entry(struct tcpc_device *tcpc)
 #ifdef CONFIG_USB_PD_WAIT_BC12
 static inline void typec_handle_pd_wait_bc12(struct tcpc_device *tcpc)
 {
+	int ret = 0;
 	uint8_t type = TYPEC_UNATTACHED;
-	enum charger_type chg_type = CHARGER_UNKNOWN;
+	union power_supply_propval val = {.intval = 0};
 
 	mutex_lock(&tcpc->access_lock);
 
 	type = tcpc->typec_attach_new;
-	chg_type = mt_get_charger_type();
-	TYPEC_INFO("type=%d, chg_type=%d, count=%d\n", type, chg_type,
-		tcpc->pd_wait_bc12_count);
+	ret = power_supply_get_property(tcpc->chg_psy,
+		POWER_SUPPLY_PROP_USB_TYPE, &val);
+	TYPEC_INFO("type=%d, ret,chg_type=%d,%d, count=%d\n", type,
+		ret, val.intval, tcpc->pd_wait_bc12_count);
 
 	if (type != TYPEC_ATTACHED_SNK && type != TYPEC_ATTACHED_DBGACC_SNK)
 		goto out;
 
-	if (chg_type != CHARGER_UNKNOWN ||
+	if ((ret >= 0 && val.intval != POWER_SUPPLY_USB_TYPE_UNKNOWN) ||
 		tcpc->pd_wait_bc12_count >= 20) {
 		__pd_put_cc_attached_event(tcpc, type);
 	} else {
