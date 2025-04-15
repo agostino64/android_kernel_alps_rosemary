@@ -192,8 +192,6 @@ struct cp_device {
 struct usbpd_pm {
 	struct device *dev;
 
-	struct tcpc_device *tcpc;
-
 	enum pm_state state;
 
 	struct cp_device cp;
